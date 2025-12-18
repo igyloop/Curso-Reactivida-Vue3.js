@@ -12,7 +12,7 @@
       <header>
         <h3>PlatziCommerce</h3>
         <button class="cart" v-on:click="cartOpen = !cartOpen">
-          Carro (0)
+          Carro ({{ cart.length }})
         </button>
         <div class="cart-content" v-show="cartOpen">
           <div
@@ -27,7 +27,8 @@
             />
             <span
               >{{ product.name }} - $ {{ new
-              Intl.NumberFormat("es-PE").format(product.price) }}</span
+              Intl.NumberFormat("es-PE").format(product.price) }} ({{
+              product.quantity }})</span
             >
           </div>
         </div>
@@ -73,10 +74,10 @@
             <input
               type="text"
               placeholder="Ingresa tu código"
-              @keyup.enter="product.price *= 50 / 1000"
+              @keyup.enter="appyDiscount($event)"
             />
           </div>
-          <button :disabled="product.stock == 0" @click="product.stock -= 1">
+          <button :disabled="product.stock == 0" @click="addToCart()">
             Agregar al carrito
           </button>
         </section>
@@ -93,7 +94,7 @@
             product: {
               name: "Camara",
               price: 450000,
-              stock: 1,
+              stock: 5,
               content: `Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eaque eum laborum, illum ullam cum repellendus nobis distinctio, expedita facilis consectetur et tenetur corrupti optio reiciendis error nostrum ab temporibus alias!`,
               images: [
                 {
@@ -107,66 +108,35 @@
               ],
               new: false,
               offer: true,
+              quantity: 1,
             },
-            cartOpen: true,
+            cartOpen: false,
             activeImage: 1,
-            cart: [
-              {
-                name: "Camara",
-                price: 450_000,
-                stock: 1,
-                content: `Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eaque eum laborum, illum ullam cum repellendus nobis distinctio, expedita facilis consectetur et tenetur corrupti optio reiciendis error nostrum ab temporibus alias!`,
-                images: [
-                  {
-                    image: "./images/camara.jpg",
-                    thumbnail: "./images/camara-thumb.jpg",
-                  },
-                  {
-                    image: "./images/camara-2.jpg",
-                    thumbnail: "./images/camara-2-thumb.jpg",
-                  },
-                ],
-                new: false,
-                offer: true,
-              },
-              {
-                name: "Camara PL",
-                price: 250_000,
-                stock: 1,
-                content: `Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eaque eum laborum, illum ullam cum repellendus nobis distinctio, expedita facilis consectetur et tenetur corrupti optio reiciendis error nostrum ab temporibus alias!`,
-                images: [
-                  {
-                    image: "./images/camara.jpg",
-                    thumbnail: "./images/camara-thumb.jpg",
-                  },
-                  {
-                    image: "./images/camara-2.jpg",
-                    thumbnail: "./images/camara-2-thumb.jpg",
-                  },
-                ],
-                new: false,
-                offer: true,
-              },
-              {
-                name: "Camara PL2",
-                price: 350_000,
-                stock: 1,
-                content: `Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eaque eum laborum, illum ullam cum repellendus nobis distinctio, expedita facilis consectetur et tenetur corrupti optio reiciendis error nostrum ab temporibus alias!`,
-                images: [
-                  {
-                    image: "./images/camara.jpg",
-                    thumbnail: "./images/camara-thumb.jpg",
-                  },
-                  {
-                    image: "./images/camara-2.jpg",
-                    thumbnail: "./images/camara-2-thumb.jpg",
-                  },
-                ],
-                new: false,
-                offer: true,
-              },
-            ],
+            cart: [],
+            discountCodes: ["PLATZI10", "PLATZI20", "PLATZI30"],
           };
+        },
+        methods: {
+          appyDiscount(event) {
+            const discountCodeIndex = this.discountCodes.indexOf(
+              event.target.value
+            );
+            if (discountCodeIndex >= 0) {
+              this.product.price *= 50 / 1000;
+              this.discountCodes.splice(discountCodeIndex, 1);
+            }
+          },
+          addToCart() {
+            const prodIndex = this.cart.findIndex(
+              (prod) => prod.name === this.product.name
+            );
+            if (prodIndex >= 0) {
+              this.cart[prodIndex].quantity += 1;
+            } else {
+              this.cart.push(this.product);
+            }
+            this.product.stock -= 1;
+          },
         },
       });
       app.mount("#app");
